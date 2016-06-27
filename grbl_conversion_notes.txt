@@ -1,0 +1,69 @@
+STUFF TO REMEMBER:
+
+Configuration
+-------------
+
+1) Need to enable:
+config.h:152: // #define COREXY // Default disabled. Uncomment to enable.
+
+2) References to 'spindle', might need to remove? (After checking references)
+config.h:239-263
+	// Enables variable spindle output voltage for different RPM values. On the Arduino Uno, the spindle
+	// enable pin will output 5V for maximum RPM with 256 intermediate levels and 0V when disabled.
+	// NOTE: IMPORTANT for Arduino Unos! When enabled, the Z-limit pin D11 and spindle enable pin D12 switch!
+	// The hardware PWM output on pin D11 is required for variable spindle output voltages.
+	#define VARIABLE_SPINDLE // Default enabled. Comment to disable.
+
+	// Used by the variable spindle output only. These parameters set the maximum and minimum spindle speed
+	// "S" g-code values to correspond to the maximum and minimum pin voltages. There are 256 discrete and 
+	// equally divided voltage bins between the maximum and minimum spindle speeds. So for a 5V pin, 1000
+	// max rpm, and 250 min rpm, the spindle output voltage would be set for the following "S" commands: 
+	// "S1000" @ 5V, "S250" @ 0.02V, and "S625" @ 2.5V (mid-range). The pin outputs 0V when disabled.
+	#define SPINDLE_MAX_RPM 1000.0 // Max spindle RPM. This value is equal to 100% duty cycle on the PWM.
+	#define SPINDLE_MIN_RPM 0.0    // Min spindle RPM. This value is equal to (1/256) duty cycle on the PWM.
+	.....continued
+
+	
+3) Per-machine defaults;
+defaults.h:44-48
+	#ifdef DEFAULTS_SHAPEOKO
+	  // Description: Shapeoko CNC mill with three NEMA 17 stepper motors, driven by Synthetos
+	  // grblShield with a 24V, 4.2A power supply.
+	  #include "defaults/defaults_shapeoko.h"
+	#endif
+Typically only defines machine settings, but might be appropriate to define other settings and preprocessor directives without undue impact?
+
+TODO: Needs other settings in it...
+
+4) Pin mapping;
+cpu_map.h:32-34
+	#ifdef CPU_MAP_ATMEGA328P // (Arduino Uno) Officially supported by Grbl.
+	  #include "cpu_map/cpu_map_atmega328p.h"
+	#endif	
+Definitely need to configure it here.
+Possibly a group, like the 'VARIABLE_SPINDLE' mode?
+Need to check the Atmega328p -> Arduino mapping!
+Need to check the Arduino -> shield mapping and available pins!
+Can't use limit switches / homing?
+
+
+Execution
+---------
+There *is* a coolant_control feature.
+Uses the commands M07 M08 M09.
+Grbl has the 'ENABLE_M7' define.
+
+Usually spindle on/off is M03 M04 M05. (and looks like M03 M04 can have an S parameter)
+(but the 'variable spindle' commands are in the eg S1234 params of other commands like G01)
+https://en.wikipedia.org/wiki/G-code
+
+Other things like 'A' axis and so on, but they might have interactions.
+At least one 'raster engraving' controller uses G01 and S commands.
+
+gcode.c:862
+  // [7. Spindle control ]:
+  if (gc_state.modal.spindle != gc_block.modal.spindle) {
+    // Update spindle control and apply spindle speed when enabling it in this block.    
+    spindle_run(gc_block.modal.spindle, gc_state.spindle_speed);
+    gc_state.modal.spindle = gc_block.modal.spindle;    
+  }
