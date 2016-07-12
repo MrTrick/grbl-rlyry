@@ -67,6 +67,11 @@
 #else
   #define Z_LIMIT_BIT    3  // Uno Digital Pin 11
 #endif
+// RLYRLY: Can't use the limit bits with multi spindle - put them all on one pin...
+#ifdef RLYRLY_SPINDLE
+  #define Y_LIMIT_BIT    1 // Uno Digital Pin 9
+  #define Z_LIMIT_BIT    1 // Uno Digital Pin 9
+#endif
 #define LIMIT_MASK       ((1<<X_LIMIT_BIT)|(1<<Y_LIMIT_BIT)|(1<<Z_LIMIT_BIT)) // All limit bits
 #define LIMIT_INT        PCIE0  // Pin change interrupt enable pin
 #define LIMIT_INT_vect   PCINT0_vect 
@@ -90,6 +95,20 @@
   #define SPINDLE_DIRECTION_DDR   DDRB
   #define SPINDLE_DIRECTION_PORT  PORTB
   #define SPINDLE_DIRECTION_BIT   5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
+#endif
+#ifdef RLYRLY_SPINDLE
+  //RLYRLY: Use _COUNT contiguous pins on the port from the _LSB pin upwards
+  //        eg for PORTB, LSB 2, COUNT 4; uses
+  //                                      Uno Digital Pin 10
+  //                                      Uno Digital Pin 11
+  //                                      Uno Digital Pin 12
+  //                                      Uno Digital Pin 13
+  // This conflicts with the limit switches, so do not use concurrently...
+  // (TODO: err, should actually do something about this. Known bug - can't use the two together)
+  #define RLYRLY_DDR	DDRB
+  #define RLYRLY_PORT	PORTB
+  #define RLYRLY_LSB 2 // Uno Digital Pin 10...  
+  #define RLYRLY_MASK (bit(RLYRLY_LSB+RLYRLY_COUNT)-bit(RLYRLY_LSB))
 #endif
   
 // Define flood and mist coolant enable output pins.

@@ -27,8 +27,6 @@
 #ifndef defaults_h
 #define defaults_h
 
-  #define COREXY 
-  
   // DRIP project settings. 
   // Designed for;
   //  - X and Y motors in CoreXY arrangement, with GT2 belts and T-20 pulleys

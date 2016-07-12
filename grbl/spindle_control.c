@@ -31,9 +31,10 @@ void spindle_init()
     #if defined(CPU_MAP_ATMEGA2560) || defined(USE_SPINDLE_DIR_AS_ENABLE_PIN)
       SPINDLE_ENABLE_DDR |= (1<<SPINDLE_ENABLE_BIT); // Configure as output pin.
     #endif     
-  // Configure no variable spindle and only enable pin.
-  #else  
-    SPINDLE_ENABLE_DDR |= (1<<SPINDLE_ENABLE_BIT); // Configure as output pin.
+  #endif
+  // RLYRLY: Configure multi-spindle pins.
+  #ifdef RLYRLY_SPINDLE
+	RLYRLY_DDR |= RLYRLY_MASK; //Make each of the spindle outputs an output pin.
   #endif
   
   #ifndef USE_SPINDLE_DIR_AS_ENABLE_PIN
@@ -55,6 +56,14 @@ void spindle_stop()
         SPINDLE_ENABLE_PORT &= ~(1<<SPINDLE_ENABLE_BIT); // Set pin to low
       #endif
     #endif
+  #endif
+  //RLYRLY: If in multi spindle mode, set all outputs 'off'.
+  #ifdef RLYRLY_SPINDLE
+    #ifdef INVERT_SPINDLE_ENABLE_PIN
+		RLYRLY_PORT |= RLYRLY_MASK; // Set all pins to high
+	#else
+		RLYRLY_PORT &= ~(RLYRLY_MASK); // Set all pins to low
+	#endif		
   #else
     #ifdef INVERT_SPINDLE_ENABLE_PIN
       SPINDLE_ENABLE_PORT |= (1<<SPINDLE_ENABLE_BIT);  // Set pin to high
@@ -118,7 +127,15 @@ void spindle_set_state(uint8_t state, float rpm)
           #endif
         #endif
       }
-      
+	  
+	#endif
+	//RLYRLY: Handle output for multiple relays
+	#ifdef RLYRLY_SPINDLE	
+		uint8_t out_bits = trunc(rpm); //Ignore any fractional part
+		out_bits &= (bit(RLYRLY_COUNT) - 1); //Get just '_COUNT' number of bits
+		out_bits <<= RLYRLY_LSB; //And align them with the port.
+		
+		RLYRLY_PORT = (RLYRLY_PORT & ~RLYRLY_MASK) | out_bits; //Update the port      
     #else
       // NOTE: Without variable spindle, the enable bit should just turn on or off, regardless
       // if the spindle speed value is zero, as its ignored anyhow.      
