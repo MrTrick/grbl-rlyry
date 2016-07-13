@@ -249,7 +249,7 @@
 // enable pin will output 5V for maximum RPM with 256 intermediate levels and 0V when disabled.
 // NOTE: IMPORTANT for Arduino Unos! When enabled, the Z-limit pin D11 and spindle enable pin D12 switch!
 // The hardware PWM output on pin D11 is required for variable spindle output voltages.
-#define VARIABLE_SPINDLE // Default enabled. Comment to disable. RLYRLY: Needed by 
+//#define VARIABLE_SPINDLE // Default enabled. Comment to disable. RLYRLY: Incompatible with RLYRLY_SPINDLE
 
 // RLYRLY: Enables control of multiple spindles.
 // If in this mode, you must define RLYRLY_COUNT too.

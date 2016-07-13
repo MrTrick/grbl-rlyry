@@ -61,16 +61,15 @@
 #define LIMIT_PIN        PINB
 #define LIMIT_PORT       PORTB
 #define X_LIMIT_BIT      1  // Uno Digital Pin 9
-#define Y_LIMIT_BIT      2  // Uno Digital Pin 10
 #ifdef VARIABLE_SPINDLE // Z Limit pin and spindle enabled swapped to access hardware PWM on Pin 11.  
+  #define Y_LIMIT_BIT      2  // Uno Digital Pin 10
   #define Z_LIMIT_BIT	   4 // Uno Digital Pin 12
+#elif defined RLYRLY_SPINDLE // RLYRLY: Can't use the limit bits with multi spindle - put them all on one pin...
+  #define Y_LIMIT_BIT      1  // Uno Digital Pin 9
+  #define Z_LIMIT_BIT      1  // Uno Digital Pin 9
 #else
-  #define Z_LIMIT_BIT    3  // Uno Digital Pin 11
-#endif
-// RLYRLY: Can't use the limit bits with multi spindle - put them all on one pin...
-#ifdef RLYRLY_SPINDLE
-  #define Y_LIMIT_BIT    1 // Uno Digital Pin 9
-  #define Z_LIMIT_BIT    1 // Uno Digital Pin 9
+  #define Y_LIMIT_BIT      2  // Uno Digital Pin 10	
+  #define Z_LIMIT_BIT      3  // Uno Digital Pin 11
 #endif
 #define LIMIT_MASK       ((1<<X_LIMIT_BIT)|(1<<Y_LIMIT_BIT)|(1<<Z_LIMIT_BIT)) // All limit bits
 #define LIMIT_INT        PCIE0  // Pin change interrupt enable pin
