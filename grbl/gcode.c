@@ -343,7 +343,16 @@ uint8_t gc_execute_line(char *line)
           // NOTE: For certain commands, P value must be an integer, but none of these commands are supported.
           // case 'Q': // Not supported
           case 'R': word_bit = WORD_R; gc_block.values.r = value; break;
-          case 'S': word_bit = WORD_S; gc_block.values.s = value; break;
+		  #ifdef RLYRLY_SPINDLE
+		    case 'S': 
+				word_bit = WORD_S; 
+				if (value < 0.0) { FAIL(STATUS_NEGATIVE_VALUE); } // [Word value cannot be negative]
+				if (int_value >= (1<<RLYRLY_COUNT)) FAIL(STATUS_OVERFLOW_VALUE); //Can't set relay bits that aren't there
+				gc_block.values.s = int_value; 
+				break; //Store int bitmask for relay states
+		  #else
+            case 'S': word_bit = WORD_S; gc_block.values.s = value; break; //Store float rpm
+		  #endif
           case 'T': word_bit = WORD_T; break; // gc.values.t = int_value;
           case 'X': word_bit = WORD_X; gc_block.values.xyz[X_AXIS] = value; axis_words |= (1<<X_AXIS); break;
           case 'Y': word_bit = WORD_Y; gc_block.values.xyz[Y_AXIS] = value; axis_words |= (1<<Y_AXIS); break;
@@ -358,6 +367,7 @@ uint8_t gc_execute_line(char *line)
         if ( bit(word_bit) & (bit(WORD_F)|bit(WORD_N)|bit(WORD_P)|bit(WORD_T)|bit(WORD_S)) ) {
           if (value < 0.0) { FAIL(STATUS_NEGATIVE_VALUE); } // [Word value cannot be negative]
         }
+		
         value_words |= bit(word_bit); // Flag to indicate parameter assigned.
       
     }   

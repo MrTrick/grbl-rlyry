@@ -31,9 +31,8 @@ void spindle_init()
     #if defined(CPU_MAP_ATMEGA2560) || defined(USE_SPINDLE_DIR_AS_ENABLE_PIN)
       SPINDLE_ENABLE_DDR |= (1<<SPINDLE_ENABLE_BIT); // Configure as output pin.
     #endif     
-  #endif
   // RLYRLY: Configure multi-spindle pins.
-  #ifdef RLYRLY_SPINDLE
+  #elif defined RLYRLY_SPINDLE
 	RLYRLY_DDR |= RLYRLY_MASK; //Make each of the spindle outputs an output pin.
   #endif
   
@@ -56,9 +55,8 @@ void spindle_stop()
         SPINDLE_ENABLE_PORT &= ~(1<<SPINDLE_ENABLE_BIT); // Set pin to low
       #endif
     #endif
-  #endif
   //RLYRLY: If in multi spindle mode, set all outputs 'off'.
-  #ifdef RLYRLY_SPINDLE
+  #elif defined RLYRLY_SPINDLE
     #ifdef INVERT_SPINDLE_ENABLE_PIN
 		RLYRLY_PORT |= RLYRLY_MASK; // Set all pins to high
 	#else
@@ -73,8 +71,7 @@ void spindle_stop()
   #endif  
 }
 
-
-void spindle_set_state(uint8_t state, float rpm)
+void spindle_set_state(uint8_t state, spindle_t rpm)
 {
   // Halt or set spindle direction and rpm. 
   if (state == SPINDLE_DISABLE) {
@@ -128,14 +125,9 @@ void spindle_set_state(uint8_t state, float rpm)
         #endif
       }
 	  
-	#endif
 	//RLYRLY: Handle output for multiple relays
-	#ifdef RLYRLY_SPINDLE	
-		uint8_t out_bits = trunc(rpm); //Ignore any fractional part
-		out_bits &= (bit(RLYRLY_COUNT) - 1); //Get just '_COUNT' number of bits
-		out_bits <<= RLYRLY_LSB; //And align them with the port.
-		
-		RLYRLY_PORT = (RLYRLY_PORT & ~RLYRLY_MASK) | out_bits; //Update the port      
+	#elif defined RLYRLY_SPINDLE	
+		RLYRLY_PORT = (RLYRLY_PORT & ~RLYRLY_MASK) | (rpm << RLYRLY_LSB); //Update the output ports
     #else
       // NOTE: Without variable spindle, the enable bit should just turn on or off, regardless
       // if the spindle speed value is zero, as its ignored anyhow.      
@@ -149,8 +141,7 @@ void spindle_set_state(uint8_t state, float rpm)
   }
 }
 
-
-void spindle_run(uint8_t state, float rpm)
+void spindle_run(uint8_t state, spindle_t rpm)
 {
   if (sys.state == STATE_CHECK_MODE) { return; }
   protocol_buffer_synchronize(); // Empty planner buffer to ensure spindle is set when programmed.  

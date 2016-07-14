@@ -51,6 +51,8 @@ void report_status_message(uint8_t status_code)
         printPgmString(PSTR("Expected command letter")); break;
         case STATUS_BAD_NUMBER_FORMAT:
         printPgmString(PSTR("Bad number format")); break;
+		case STATUS_OVERFLOW_VALUE:
+		printPgmString(PSTR("Value is too high")); break;
         case STATUS_INVALID_STATEMENT:
         printPgmString(PSTR("Invalid statement")); break;
         case STATUS_NEGATIVE_VALUE:
@@ -478,7 +480,15 @@ void report_realtime_status()
     printPgmString(PSTR(",RX:"));
     print_uint8_base10(serial_get_rx_buffer_count());
   }
-    
+  
+  #ifdef RLYRLY_SPINDLE
+	// Report RLYRLY relay (spindle) state as bits
+	if (bit_istrue(settings.status_report_mask,BITFLAG_RT_STATUS_RELAY_STATE)) {
+	  printPgmString(PSTR(",RLY:0b"));
+	  print_unsigned_int8(gc_state.spindle_speed,2,RLYRLY_COUNT);
+	}
+  #endif	
+		
   #ifdef USE_LINE_NUMBERS
     // Report current line number
     printPgmString(PSTR(",Ln:")); 

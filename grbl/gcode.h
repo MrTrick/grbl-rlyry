@@ -139,6 +139,11 @@
 #define WORD_Y  11
 #define WORD_Z  12
 
+#ifdef RLYRLY_SPINDLE
+  typedef uint8_t spindle_t;
+#else
+  typedef float spindle_t;
+#endif
 
 // NOTE: When this struct is zeroed, the above defines set the defaults for the system.
 typedef struct {
@@ -165,7 +170,7 @@ typedef struct {
   float p;         // G10 or dwell parameters
   // float q;      // G82 peck drilling
   float r;         // Arc radius
-  float s;         // Spindle speed
+  spindle_t s;       // Spindle speed
   uint8_t t;       // Tool selection
   float xyz[3];    // X,Y,Z Translational axes
 } gc_values_t;
@@ -174,7 +179,7 @@ typedef struct {
 typedef struct {
   gc_modal_t modal;
   
-  float spindle_speed;          // RPM
+  spindle_t spindle_speed;      // RPM
   float feed_rate;              // Millimeters/min
   uint8_t tool;                 // Tracks tool number. NOT USED.
   int32_t line_number;          // Last line number sent
