@@ -486,6 +486,11 @@ void report_realtime_status()
 	if (bit_istrue(settings.status_report_mask,BITFLAG_RT_STATUS_RELAY_STATE)) {
 	  printPgmString(PSTR(",RLY:0b"));
 	  print_unsigned_int8(gc_state.spindle_speed,2,RLYRLY_COUNT);
+	  if (gc_state.modal.spindle == SPINDLE_DISABLE) {
+		printPgmString(PSTR("(Off)"));
+	  } else {
+		printPgmString(PSTR("(On)"));
+	  }
 	}
   #endif	
 		
