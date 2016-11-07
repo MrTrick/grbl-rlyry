@@ -21,7 +21,7 @@
 /* Grbl officially supports the Arduino Uno, but the other supplied pin mappings are
    supplied by users, so your results may vary. This cpu_map file serves as a central
    pin mapping settings file for AVR 328p used on the Arduino Uno.  */
-   
+
 #ifdef GRBL_PLATFORM
 #error "cpu_map already defined: GRBL_PLATFORM=" GRBL_PLATFORM
 #endif
@@ -55,32 +55,34 @@
 #define STEPPERS_DISABLE_BIT    0  // Uno Digital Pin 8
 #define STEPPERS_DISABLE_MASK   (1<<STEPPERS_DISABLE_BIT)
 
-// Define homing/hard limit switch input pins and limit interrupt vectors. 
+// Define homing/hard limit switch input pins and limit interrupt vectors.
 // NOTE: All limit bit pins must be on the same port, but not on a port with other input pins (CONTROL).
 #define LIMIT_DDR        DDRB
 #define LIMIT_PIN        PINB
 #define LIMIT_PORT       PORTB
-#define X_LIMIT_BIT      1  // Uno Digital Pin 9
-#ifdef VARIABLE_SPINDLE // Z Limit pin and spindle enabled swapped to access hardware PWM on Pin 11.  
+#ifdef VARIABLE_SPINDLE // Z Limit pin and spindle enabled swapped to access hardware PWM on Pin 11.
+  #define X_LIMIT_BIT      1  // Uno Digital Pin 9
   #define Y_LIMIT_BIT      2  // Uno Digital Pin 10
-  #define Z_LIMIT_BIT	   4 // Uno Digital Pin 12
+  #define Z_LIMIT_BIT	     4 // Uno Digital Pin 12
 #elif defined RLYRLY_SPINDLE // RLYRLY: Can't use the limit bits with multi spindle - put them all on one pin...
-  #define Y_LIMIT_BIT      1  // Uno Digital Pin 9
-  #define Z_LIMIT_BIT      1  // Uno Digital Pin 9
+  #define X_LIMIT_BIT      5  // Uno Digital Pin 13
+  #define Y_LIMIT_BIT      5  // Uno Digital Pin 13
+  #define Z_LIMIT_BIT      5  // Uno Digital Pin 13
 #else
-  #define Y_LIMIT_BIT      2  // Uno Digital Pin 10	
+  #define X_LIMIT_BIT      1  // Uno Digital Pin 9
+  #define Y_LIMIT_BIT      2  // Uno Digital Pin 10
   #define Z_LIMIT_BIT      3  // Uno Digital Pin 11
 #endif
 #define LIMIT_MASK       ((1<<X_LIMIT_BIT)|(1<<Y_LIMIT_BIT)|(1<<Z_LIMIT_BIT)) // All limit bits
 #define LIMIT_INT        PCIE0  // Pin change interrupt enable pin
-#define LIMIT_INT_vect   PCINT0_vect 
+#define LIMIT_INT_vect   PCINT0_vect
 #define LIMIT_PCMSK      PCMSK0 // Pin change interrupt register
 
 // Define spindle enable and spindle direction output pins.
 #define SPINDLE_ENABLE_DDR    DDRB
 #define SPINDLE_ENABLE_PORT   PORTB
 // Z Limit pin and spindle PWM/enable pin swapped to access hardware PWM on Pin 11.
-#ifdef VARIABLE_SPINDLE 
+#ifdef VARIABLE_SPINDLE
   #ifdef USE_SPINDLE_DIR_AS_ENABLE_PIN
     // If enabled, spindle direction pin now used as spindle enable, while PWM remains on D11.
     #define SPINDLE_ENABLE_BIT    5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
@@ -97,19 +99,19 @@
 #endif
 #ifdef RLYRLY_SPINDLE
   //RLYRLY: Use _COUNT contiguous pins on the port from the _LSB pin upwards
-  //        eg for PORTB, LSB 2, COUNT 4; uses
+  //        eg for PORTB, LSB 1, COUNT 4; uses
+  //                                      Uno Digital Pin 9
   //                                      Uno Digital Pin 10
   //                                      Uno Digital Pin 11
   //                                      Uno Digital Pin 12
-  //                                      Uno Digital Pin 13
   // This conflicts with the limit switches, so do not use concurrently...
   // (TODO: err, should actually do something about this. Known bug - can't use the two together)
   #define RLYRLY_DDR	DDRB
   #define RLYRLY_PORT	PORTB
-  #define RLYRLY_LSB 2 // Uno Digital Pin 10...  
+  #define RLYRLY_LSB 1 // Uno Digital Pin 9...  
   #define RLYRLY_MASK (bit(RLYRLY_LSB+RLYRLY_COUNT)-bit(RLYRLY_LSB))
 #endif
-  
+
 // Define flood and mist coolant enable output pins.
 // NOTE: Uno analog pins 4 and 5 are reserved for an i2c interface, and may be installed at
 // a later date if flash and memory space allows.
@@ -120,7 +122,7 @@
   #define COOLANT_MIST_DDR   DDRC
   #define COOLANT_MIST_PORT  PORTC
   #define COOLANT_MIST_BIT   4 // Uno Analog Pin 4
-#endif  
+#endif
 
 // Define user-control controls (cycle start, reset, feed hold) input pins.
 // NOTE: All CONTROLs pins must be on the same port and not on a port with other input pins (limits).
@@ -136,7 +138,7 @@
 #define CONTROL_PCMSK     PCMSK1 // Pin change interrupt register
 #define CONTROL_MASK ((1<<RESET_BIT)|(1<<FEED_HOLD_BIT)|(1<<CYCLE_START_BIT)|(1<<SAFETY_DOOR_BIT))
 #define CONTROL_INVERT_MASK CONTROL_MASK // May be re-defined to only invert certain control pins.
-  
+
 // Define probe switch input pin.
 #define PROBE_DDR       DDRC
 #define PROBE_PIN       PINC
@@ -151,13 +153,13 @@
   #define TCCRA_REGISTER	 TCCR2A
   #define TCCRB_REGISTER	 TCCR2B
   #define OCR_REGISTER     OCR2A
-  
+
   #define COMB_BIT	     COM2A1
   #define WAVE0_REGISTER	 WGM20
   #define WAVE1_REGISTER	 WGM21
   #define WAVE2_REGISTER	 WGM22
   #define WAVE3_REGISTER	 WGM23
-      
+
   // NOTE: On the 328p, these must be the same as the SPINDLE_ENABLE settings.
   #define SPINDLE_PWM_DDR	  DDRB
   #define SPINDLE_PWM_PORT  PORTB
